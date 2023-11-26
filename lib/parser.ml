@@ -119,7 +119,7 @@ let parse_dump_vars lexbuf = DumpVars (parse_any_text lexbuf)
 (* TODO: Implement propertly *)
 
 let parse_simulation_time lexbuf =
-  let time = int_of_string @@ pop_token lexbuf Number in
+  let time = pop_token lexbuf Number in
   SimulationTime time
 
 let parse_scalar_value lexbuf value =
@@ -127,10 +127,7 @@ let parse_scalar_value lexbuf value =
   ScalarValue { value; identifier }
 
 let parse_binary_vector lexbuf =
-  let parse_bin_vector num =
-    num |> String.to_seq |> Seq.map parse_bin_value |> Array.of_seq
-  in
-  let value = parse_bin_vector @@ pop_token lexbuf BinaryNumber in
+  let value = pop_token lexbuf BinaryNumber in
   let identifier = pop_token lexbuf Identifier in
   BinaryVectorValue { value; identifier }
 
@@ -153,8 +150,7 @@ let parse_scope lexbuf =
 let parse_timescale lexbuf =
   let number =
     let token = pop_token lexbuf Number in
-    match int_of_string token with
-    | exception Failure _ -> parse_error lexbuf "A number" token
+    match token with
     | (1 | 10 | 100) as x -> x
     | x -> parse_error lexbuf "{1, 10, 100}" (string_of_int x)
   in
@@ -201,7 +197,7 @@ let parse_var lexbuf =
            triand, trior, trireg, tri0, tri1, wand, wire, wor}"
           x
   in
-  let size = int_of_string (pop_token lexbuf Number) in
+  let size = pop_token lexbuf Number in
   let identifier = pop_token lexbuf Identifier in
   let reference = pop_token lexbuf Reference in
   parse_end lexbuf;

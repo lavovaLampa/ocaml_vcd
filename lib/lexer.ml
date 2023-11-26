@@ -25,14 +25,21 @@ type simulation_token =
 
 exception EndOfFile
 
-type token_type =
-  | End
-  | Identifier
-  | Reference
-  | Number
-  | BinaryNumber
-  | AnyText
-[@@deriving show]
+type _ token_type =
+  | End : unit token_type
+  | Identifier : string token_type
+  | Reference : string token_type
+  | Number : int token_type
+  | BinaryNumber : binary_value array token_type
+  | AnyText : string token_type
+
+let show_token_type : type t. t token_type -> string = function
+  | End -> "End"
+  | Identifier -> "Identifier"
+  | Reference -> "Reference"
+  | Number -> "Number"
+  | BinaryNumber -> "BinaryNumber"
+  | AnyText -> "AnyText"
 
 let identifier = [%sedlex.regexp? Plus '!' .. '~']
 let binary_char = [%sedlex.regexp? Chars "01uUxXzZ"]
@@ -85,13 +92,14 @@ let parse_bin_value ch =
 let lex_bin_value lexbuf =
   Sedlexing.lexeme_char lexbuf 0 |> Uchar.to_char |> parse_bin_value
 
-let rec lex_identifier lexbuf token_type =
+let rec lex_identifier : type t. Sedlexing.lexbuf -> t token_type -> t option =
+ fun lexbuf token_type ->
   match%sedlex lexbuf with
   | eof -> raise EndOfFile
   | Plus (whitespace | newline) -> lex_identifier lexbuf token_type
   | _ -> (
       match token_type with
-      | End -> ( match%sedlex lexbuf with "$end" -> Some "" | _ -> None)
+      | End -> ( match%sedlex lexbuf with "$end" -> Some () | _ -> None)
       | Identifier -> (
           match%sedlex lexbuf with
           | identifier -> Some (string_of_token lexbuf)
@@ -102,11 +110,14 @@ let rec lex_identifier lexbuf token_type =
           | _ -> None)
       | Number -> (
           match%sedlex lexbuf with
-          | decimal_number -> Some (string_of_token lexbuf)
+          | decimal_number -> Some (int_of_string @@ string_of_token lexbuf)
           | _ -> None)
       | BinaryNumber -> (
           match%sedlex lexbuf with
-          | binary_number -> Some (string_of_token lexbuf)
+          | binary_number ->
+              Some
+                (lexbuf |> Sedlexing.lexeme
+                |> Array.map (fun x -> parse_bin_value @@ Uchar.to_char x))
           | _ -> None)
       | AnyText -> (
           match%sedlex lexbuf with
