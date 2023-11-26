@@ -1,0 +1,4 @@
+(library
+ (name ocaml_vcd)
+ (libraries sedlex uutf ppx_show.runtime)
+ (preprocess (pps sedlex.ppx ppx_show)))

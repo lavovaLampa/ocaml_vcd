@@ -1,0 +1,5 @@
+(executable
+ (public_name ocaml_vcd)
+ (name main)
+ (modes byte exe)
+ (libraries ocaml_vcd sedlex ppx_show.runtime))
