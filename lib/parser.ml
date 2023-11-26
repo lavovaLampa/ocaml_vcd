@@ -67,8 +67,6 @@ type simulation =
 type vcd_ast = { declarations : declaration list; simulation : simulation list }
 [@@deriving show]
 
-let ( let* ) o f = match o with None -> [] | Some x -> f x
-
 let parse_error_printer err =
   let to_string expected got
       ({ pos_lnum; pos_bol; pos_cnum; _ } : Lexing.position) =
