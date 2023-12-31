@@ -2,4 +2,6 @@
  (public_name ocaml_vcd)
  (name main)
  (modes byte exe)
+ (preprocess
+  (pps ppx_show))
  (libraries ocaml_vcd sedlex ppx_show.runtime))

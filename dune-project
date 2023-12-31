@@ -1,26 +1,27 @@
-(lang dune 3.11)
+(lang dune 3.12)
 
 (name ocaml_vcd)
+(version 0.0.1)
 
 (generate_opam_files true)
 (map_workspace_root false)
 
 (source
- (github username/reponame))
+ (github lavovaLampa/ocaml_vcd))
 
-(authors "LavovaLampa")
+(authors "LavovaLampa <lavovalampa@protonmail.com>")
 
-(maintainers "Maintainer Name")
+(maintainers "LavovaLampa <lavovalampa@protonmail.com>")
 
-(license LICENSE)
+(license MIT)
 
 (documentation https://url/to/documentation)
 
 (package
  (name ocaml_vcd)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
+ (synopsis "Value Change Dump parser")
+ (description "Pure OCaml VCD file parser (as defined in IEEE 1364-1995)")
+ (depends ocaml dune sedlex ppx_show uutf)
  (tags
   (topics "to describe" your project)))
 
