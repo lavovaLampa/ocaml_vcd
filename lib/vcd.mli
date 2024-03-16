@@ -8,6 +8,8 @@ type scope = { scope : Parser.scope; parent : scope option } [@@deriving show]
 type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 (** Scoped variable *)
 
+module StringHashtbl : Hashtbl.S with type key = string
+
 type src = {
   src : src_type;
   sim_byte_offset : int;  (** Byte offset into simulation commands *)
@@ -19,7 +21,7 @@ type declarations = {
   timescale : Parser.timescale;
   date : string option;
   version : string option;
-  id_to_var : (string, scoped_var) Hashtbl.t;
+  id_to_var : scoped_var StringHashtbl.t;
 }
 (** Parsed declarations *)
 

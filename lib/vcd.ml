@@ -5,6 +5,8 @@ type src_type = String of string | File of string  (** Input source type *)
 type scope = { scope : Parser.scope; parent : scope option } [@@deriving show]
 type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 
+module StringHashtbl = Hashtbl.Make (String)
+
 type src = {
   src : src_type;
   sim_byte_offset : int;  (** Byte offset into simulation commands *)
@@ -16,14 +18,14 @@ type declarations = {
   timescale : Parser.timescale;
   date : string option;
   version : string option;
-  id_to_var : (string, scoped_var) Hashtbl.t;
+  id_to_var : scoped_var StringHashtbl.t;
 }
 
 type t = { src : src; declarations : declarations }
 
 let build_var_hashtbl ?(size = 100) declarations =
   let open Parser in
-  let hashtbl = Hashtbl.create size in
+  let hashtbl = StringHashtbl.create size in
   let aux parent cmd =
     match cmd with
     | Scope scope -> Some { scope; parent }
@@ -32,7 +34,7 @@ let build_var_hashtbl ?(size = 100) declarations =
         | None -> failwith "Unexpected"
         | Some { parent; _ } -> parent)
     | Var var ->
-        Hashtbl.add hashtbl var.identifier { var; scope = parent };
+        StringHashtbl.add hashtbl var.identifier { var; scope = parent };
         parent
     | _ -> parent
   in
@@ -75,10 +77,10 @@ let date { declarations = { date; _ }; _ } = date
 let timescale { declarations = { timescale; _ }; _ } = timescale
 
 let variables { declarations = { id_to_var; _ }; _ } =
-  id_to_var |> Hashtbl.to_seq_values |> List.of_seq
+  id_to_var |> StringHashtbl.to_seq_values |> List.of_seq
 
 let identifiers { declarations = { id_to_var; _ }; _ } =
-  id_to_var |> Hashtbl.to_seq_keys |> List.of_seq
+  id_to_var |> StringHashtbl.to_seq_keys |> List.of_seq
 
 let comments { declarations = { declarations; _ }; _ } =
   declarations
@@ -96,7 +98,7 @@ let string_of_var ?(sep = ".") { var; scope } =
   @@ (Lexer.show_reference var.reference :: string_of_scope scope)
 
 let var_of_identifier { declarations = { id_to_var; _ }; _ } id =
-  Hashtbl.find_all id_to_var id
+  StringHashtbl.find_all id_to_var id
 
 let from_utf8_file file = make (File file)
 let from_utf8_string string = make (String string)
