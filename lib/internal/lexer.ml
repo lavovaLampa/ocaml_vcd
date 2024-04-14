@@ -1,5 +1,7 @@
 type binary_value = Zero | One | X | Z | U | Nothing
 
+module Sedlexing = MySedlex.MyUtf8
+
 let show_binary_value = function
   | Zero -> "0"
   | One -> "1"
@@ -88,7 +90,8 @@ let any_text =
 let real_number = [%sedlex.regexp? '0']
 let decimal_digit = [%sedlex.regexp? '0' .. '9']
 let decimal_number = [%sedlex.regexp? Plus decimal_digit]
-let string_of_token lexbuf = Sedlexing.Utf8.lexeme lexbuf
+let string_of_token lexbuf = Sedlexing.string_of_lexbuf lexbuf
+(* let string_of_token lexbuf = Sedlexing.Utf8.lexeme lexbuf *)
 
 let parse_bin_value ch =
   match ch with

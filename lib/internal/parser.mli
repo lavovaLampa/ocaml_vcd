@@ -1,3 +1,5 @@
+module Sedlexing = MySedlex.MyUtf8
+
 exception
   ParseError of { expected : string; got : string; position : Lexing.position }
 

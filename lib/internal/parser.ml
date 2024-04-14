@@ -1,6 +1,8 @@
 open Lexer
 open Util
 
+module Sedlexing = MySedlex.MyUtf8
+
 exception
   ParseError of { expected : string; got : string; position : Lexing.position }
 
@@ -105,10 +107,19 @@ let parse_error_printer err =
       Some (to_string expected got position)
   | _ -> None
 
+(* let[@tail_mod_cons] parse_error lexbuf expected got =
+   raise
+     (ParseError
+        { expected; got; position = fst (Sedlexing.lexing_positions lexbuf) }) *)
+
 let[@tail_mod_cons] parse_error lexbuf expected got =
   raise
     (ParseError
-       { expected; got; position = fst (Sedlexing.lexing_positions lexbuf) })
+       {
+         expected;
+         got;
+         position = { pos_fname = ""; pos_lnum = 0; pos_bol = 0; pos_cnum = 0 };
+       })
 
 let pop_token lexbuf token_type =
   match Lexer.lex_identifier lexbuf token_type with

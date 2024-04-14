@@ -17,8 +17,6 @@ let () =
     print_endline @@ Parser.show_timescale timescale;
     List.iter (print_endline % Vcd.string_of_var) variables;
     let sim_seq = Sim.seq_of_sim vcd in
-    match sim_seq () with
-    | Nil -> ()
-    | Seq.Cons ((_, values), _) -> List.iter (fun _ -> ()) values
+    Seq.iter (fun (_, _) -> ()) sim_seq
   in
   main ()

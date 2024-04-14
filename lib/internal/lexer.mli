@@ -1,5 +1,7 @@
 type binary_value = Zero | One | X | Z | U | Nothing [@@deriving show]
 
+module Sedlexing = MySedlex.MyUtf8
+
 (** VCD declaration section token*)
 type declaration_token =
   | Comment
