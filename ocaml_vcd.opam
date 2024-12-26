@@ -13,9 +13,7 @@ bug-reports: "https://github.com/lavovaLampa/ocaml_vcd/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.12"}
-  "sedlex"
   "ppx_show"
-  "uutf"
   "odoc" {with-doc}
 ]
 build: [

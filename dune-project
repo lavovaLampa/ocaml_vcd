@@ -21,7 +21,7 @@
  (name ocaml_vcd)
  (synopsis "Value Change Dump parser")
  (description "Pure OCaml VCD file parser (as defined in IEEE 1364-1995)")
- (depends ocaml dune sedlex ppx_show uutf)
+ (depends ocaml dune ppx_show)
  (tags
   (topics "to describe" your project)))
 

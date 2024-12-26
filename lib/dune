@@ -1,7 +1,8 @@
 (include_subdirs qualified)
 
 (library
+ (public_name ocaml_vcd)
  (name ocaml_vcd)
- (libraries sedlex uutf ppx_show.runtime)
+ (libraries ppx_show.runtime)
  (preprocess
-  (pps sedlex.ppx ppx_show)))
+  (pps ppx_show)))

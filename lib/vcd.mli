@@ -10,23 +10,8 @@ type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 
 module StringHashtbl : Hashtbl.S with type key = string
 
-type src = {
-  src : src_type;
-  sim_byte_offset : int;  (** Byte offset into simulation commands *)
-}
+type t
 (** Internal parsing state *)
-
-type declarations = {
-  declarations : Parser.declaration_cmd list;
-  timescale : Parser.timescale;
-  date : string option;
-  version : string option;
-  id_to_var : scoped_var StringHashtbl.t;
-}
-(** Parsed declarations *)
-
-type t = { src : src; declarations : declarations }
-(** VCD parser type *)
 
 val declarations : t -> Parser.declaration_cmd list
 (** [declarations vcd] returns list of parsed declarations *)
@@ -47,10 +32,7 @@ val identifiers : t -> string list
 (** [identifiers vcd] returns defined identifiers *)
 
 val comments : t -> string list
-(** [comments vcd] returns list of declaration comments.
-
-    For comments in simulation part, use module [Sim].
-*)
+(** [comments vcd] returns list of declaration comments. *)
 
 val string_of_var : ?sep:string -> scoped_var -> string
 (** [string_of_var ?(sep = ".") vcd var] creates a string representation
@@ -59,8 +41,15 @@ val string_of_var : ?sep:string -> scoped_var -> string
 val var_of_identifier : t -> string -> scoped_var list
 (** [var_of_identifier vcd identifier] returns all variable bound to [identifier]. *)
 
-val from_utf8_file : string -> t
-(** [from_utf8_file file] creates a fresh parser from UTF-8 encoded [file] *)
+val seq_of_simulation : t -> Parser.simulation_cmd Seq.t
+(** [seq_of_simulation vcd] returns ephemeral, affine sequence of simulation values 
+    grouped by time *)
 
-val from_utf8_string : string -> t
-(** [from_utf8_string string] creates a fresh parser from UTF-8 encoded [string] *)
+val from_file : string -> t
+(** [from_file file] creates a fresh parser from UTF-8 encoded [file] *)
+
+val from_string : string -> t
+(** [from_string string] creates a fresh parser from [string] *)
+
+val close : t -> unit
+(** [close vcd] closes input channel used for parsing (NOP for string input) *)

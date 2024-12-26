@@ -7,12 +7,6 @@ type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 
 module StringHashtbl = Hashtbl.Make (String)
 
-type src = {
-  src : src_type;
-  sim_byte_offset : int;  (** Byte offset into simulation commands *)
-}
-(** Internal parsing state *)
-
 type declarations = {
   declarations : Parser.declaration_cmd list;
   timescale : Parser.timescale;
@@ -21,7 +15,11 @@ type declarations = {
   id_to_var : scoped_var StringHashtbl.t;
 }
 
-type t = { src : src; declarations : declarations }
+type t = {
+  lexbuf : Lexing.lexbuf;
+  close : unit -> unit;
+  declarations : declarations;
+}
 
 let build_var_hashtbl ?(size = 100) declarations =
   let open Parser in
@@ -54,22 +52,23 @@ let get_date =
   % List.filter_map (function Parser.Date d -> Some d | _ -> None)
 
 let make src =
-  let init_state lexbuf =
-    let declarations = lexbuf |> Parser.seq_of_declaration |> List.of_seq in
-    let id_to_var = build_var_hashtbl declarations in
-    let sim_byte_offset = Sedlexing.lexeme_bytes_end lexbuf in
-    let timescale = get_timescale declarations in
-    let date = get_date declarations in
-    let version = get_version declarations in
-    {
-      src = { src; sim_byte_offset };
-      declarations = { declarations; timescale; date; version; id_to_var };
-    }
+  let lexbuf, close =
+    match src with
+    | String s -> (Lexing.from_string s, fun () -> ())
+    | File f ->
+        let ch = In_channel.open_bin f in
+        (Lexing.from_channel ch, fun () -> In_channel.close ch)
   in
-  match src with
-  | String s -> init_state (Sedlexing.Utf8.from_string s)
-  | File f ->
-      In_channel.with_open_bin f (init_state % Sedlexing.Utf8.from_channel)
+  let declarations = lexbuf |> Parser.seq_of_declaration |> List.of_seq in
+  let id_to_var = build_var_hashtbl declarations in
+  let timescale = get_timescale declarations in
+  let date = get_date declarations in
+  let version = get_version declarations in
+  {
+    lexbuf;
+    close;
+    declarations = { declarations; timescale; date; version; id_to_var };
+  }
 
 let declarations { declarations = { declarations; _ }; _ } = declarations
 let version { declarations = { version; _ }; _ } = version
@@ -100,5 +99,7 @@ let string_of_var ?(sep = ".") { var; scope } =
 let var_of_identifier { declarations = { id_to_var; _ }; _ } id =
   StringHashtbl.find_all id_to_var id
 
-let from_utf8_file file = make (File file)
-let from_utf8_string string = make (String string)
+let seq_of_simulation { lexbuf; _ } = Parser.seq_of_simulation lexbuf
+let from_file file = make (File file)
+let from_string string = make (String string)
+let close { close; _ } = close ()
