@@ -1,14 +1,10 @@
 open Internal
 
-type src_type = String of string | File of string  (** Input source type *)
-
 type scope = { scope : Parser.scope; parent : scope option } [@@deriving show]
 (** Scope hierarchy *)
 
 type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 (** Scoped variable *)
-
-module StringHashtbl : Hashtbl.S with type key = string
 
 type t
 (** Internal parsing state *)
