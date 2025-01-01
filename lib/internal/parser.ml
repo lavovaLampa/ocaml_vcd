@@ -37,6 +37,11 @@ type value_change =
   | RealVector of string value_change_dict
   [@@deriving show]
 
+let identifier_of_value_change = function
+  | Scalar { identifier; _ } -> identifier
+  | BinaryVector { identifier; _ } -> identifier
+  | RealVector { identifier; _ } -> identifier
+
 (* let pp_value_change f v = *)
   (* match v with *)
   (* | Scalar { value; identifier } -> *)

@@ -13,6 +13,12 @@
       | Slice of { identifier : string; msb_index : int; lsb_index : int }
     [@@deriving show]
 
+    let identifier_of_reference ref =
+      match ref with
+      | Identifier s -> s
+      | BitSelect { identifier; _ } -> identifier
+      | Slice { identifier; _ } -> identifier
+
     type time_unit =
       | Second
       | Milisecond

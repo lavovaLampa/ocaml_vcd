@@ -53,6 +53,7 @@ type vcd_ast = {
 }
 [@@deriving show]
 
+val identifier_of_value_change : value_change -> string
 val next_declaration_cmd : Lexing.lexbuf -> declaration_cmd parse_result
 val seq_of_declaration : Lexing.lexbuf -> declaration_cmd Seq.t
 val next_simulation_cmd : Lexing.lexbuf -> simulation_cmd parse_result
