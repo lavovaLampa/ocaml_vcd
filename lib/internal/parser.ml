@@ -29,13 +29,14 @@ type declaration_cmd =
 let pp_array pp_item fmt items =
   Ppx_show_runtime.pp_list pp_item fmt (Array.to_list items)
 
-type 'a value_change_dict = { identifier : string; value : 'a } [@@deriving show]
+type 'a value_change_dict = { identifier : string; value : 'a }
+[@@deriving show]
 
 type value_change =
   | Scalar of char value_change_dict
   | BinaryVector of string value_change_dict
   | RealVector of string value_change_dict
-  [@@deriving show]
+[@@deriving show]
 
 let identifier_of_value_change = function
   | Scalar { identifier; _ } -> identifier
@@ -43,14 +44,14 @@ let identifier_of_value_change = function
   | RealVector { identifier; _ } -> identifier
 
 (* let pp_value_change f v = *)
-  (* match v with *)
-  (* | Scalar { value; identifier } -> *)
-      (* Format.fprintf f "%s%s" (show_binary_value value) identifier *)
-  (* | BinaryVector { value; identifier } -> *)
-      (* Format.fprintf f "b%s %s" *)
-        (* ((String.concat "" % List.map show_binary_value % Array.to_list) value) *)
-        (* identifier *)
-  (* | RealVector v -> Format.fprintf f "%s" v *)
+(* match v with *)
+(* | Scalar { value; identifier } -> *)
+(* Format.fprintf f "%s%s" (show_binary_value value) identifier *)
+(* | BinaryVector { value; identifier } -> *)
+(* Format.fprintf f "b%s %s" *)
+(* ((String.concat "" % List.map show_binary_value % Array.to_list) value) *)
+(* identifier *)
+(* | RealVector v -> Format.fprintf f "%s" v *)
 
 (* let show_value_change = Format.asprintf "%a" pp_value_change *)
 

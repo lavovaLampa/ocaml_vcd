@@ -9,9 +9,9 @@ type 'a parse_result = Ok of 'a | EndOfFile | Err of Lexing.position
 
 type var = {
   var_type : var_type;
-  size : int;
-  identifier : string;
-  reference : Lexer.reference;
+  size : int;  (** Variable size in bits *)
+  identifier : string;  (** Variable identifier in VCD file *)
+  reference : reference;  (** Name of the variable in the model *)
 }
 [@@deriving show]
 
@@ -29,13 +29,14 @@ type declaration_cmd =
 val pp_array :
   (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a array -> unit
 
-type 'a value_change_dict = { identifier : string; value : 'a } [@@deriving show]
+type 'a value_change_dict = { identifier : string; value : 'a }
+[@@deriving show]
 
 type value_change =
   | Scalar of char value_change_dict
   | BinaryVector of string value_change_dict
   | RealVector of string value_change_dict
-  [@@deriving show]
+[@@deriving show]
 
 type simulation_cmd =
   | Comment of string

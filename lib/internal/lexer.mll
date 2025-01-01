@@ -19,6 +19,14 @@
       | BitSelect { identifier; _ } -> identifier
       | Slice { identifier; _ } -> identifier
 
+    let string_of_reference ref =
+      match ref with
+      | Identifier s -> s
+      | BitSelect { identifier; bit_select_index } ->
+          Printf.sprintf "%s[%d]" identifier bit_select_index
+      | Slice { identifier; msb_index; lsb_index } ->
+          Printf.sprintf "%s[%d:%d]" identifier msb_index lsb_index
+
     type time_unit =
       | Second
       | Milisecond
