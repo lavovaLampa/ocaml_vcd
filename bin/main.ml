@@ -18,7 +18,8 @@ let () =
     let version = Vcd.version vcd in
     let date = Vcd.date vcd in
     let timescale = Vcd.timescale vcd in
-    Printf.printf "Version: %s\n" @@ String.trim @@ Option.get version;
+    if Option.is_some version then
+      Printf.printf "Version: %s\n" @@ String.trim @@ Option.get version;
     Printf.printf "Date: %s\n" @@ String.trim @@ Option.get date;
     print_endline @@ Internal.Parser.show_timescale timescale;
     List.iter (print_endline % Vcd.string_of_var) variables;

@@ -91,7 +91,10 @@ let string_of_var ?(sep = ".") { var; scope } =
   let rec string_of_scope scope =
     match scope with
     | None -> []
-    | Some { scope; parent } -> scope.identifier :: string_of_scope parent
+    | Some { scope = { identifier = None; _ }; parent } ->
+        string_of_scope parent
+    | Some { scope = { identifier = Some i; _ }; parent } ->
+        i :: string_of_scope parent
   in
   String.concat sep @@ List.rev
   @@ (Lexer.show_reference var.reference :: string_of_scope scope)

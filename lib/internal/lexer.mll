@@ -60,13 +60,24 @@
       | WOr
     [@@deriving show]
 
-    type 'a value_change = { identifier : string; value : 'a } [@@deriving show]
+    type 'a value_change_dict = { identifier : string; value : 'a } [@@deriving show]
+
+    type value_change =
+      | ScalarValue of char value_change_dict
+      | BinaryVector of string value_change_dict
+      | RealVector of string value_change_dict
+    [@@deriving show]
+
+    let identifier_of_value_change = function
+      | ScalarValue { identifier; _ } -> identifier
+      | BinaryVector { identifier; _ } -> identifier
+      | RealVector { identifier; _ } -> identifier
 
     type token =
       | Comment of string
       | Date of string
       | EndDefinitions
-      | Scope of { scope_type : scope; identifier : string }
+      | Scope of { scope_type : scope; identifier : string option }
       | Timescale of { value : int; unit : time_unit }
       | Upscope
       | Var of {
@@ -79,11 +90,9 @@
       | DumpAll
       | DumpOff
       | DumpOn
-      | DumpVars
+      | DumpVars of value_change list
       | SimulationTime of int
-      | ScalarValue of char value_change
-      | BinaryVector of string value_change
-      | RealVector of string value_change
+      | ValueChange of value_change
       | EOF
     [@@deriving show]
 }
@@ -95,7 +104,7 @@ let binary_number = binary_digit+
 let real_number = ['+' '-']? decimal_digit+ ('.' decimal_digit+)? ('e' ['+' '-'] decimal_digit+)?
 let identifier = ['!' - '~']+
 let any_string = ([^ '$'] | "$" [^ 'e'] | "$e" [^ 'n'] | "$en" [^ 'd'])*
-let w = [' ' '\t' '\n']
+let w = [' ' '\t' '\n' '\r']
 let vector_val = (binary_digit | ['u' 'U' 'z' 'Z' 'x' 'X'])
 
 rule declaration =
@@ -116,24 +125,35 @@ and simulation =
     | "$dumpall" w* "$end"                                 { DumpAll }
     | "$dumpoff" w* "$end"                                 { DumpOff }
     | "$dumpon" w* "$end"                                  { DumpOn }
-    | "$dumpvars" w* "$end"                                { DumpVars }
+    | "$dumpvars"                                          { DumpVars (dumpvars lexbuf) }
     | "#" (decimal_number as n)                            { SimulationTime (int_of_string n) }
-    | "0" (identifier as id)                               { ScalarValue {identifier=id; value='0'} }
-    | "1" (identifier as id)                               { ScalarValue {identifier=id; value='1'} }
-    | ['x' 'X'] (identifier as id)                         { ScalarValue {identifier=id; value='X'} }
-    | ['z' 'Z'] (identifier as id)                         { ScalarValue {identifier=id; value='Z'} }
-    | ['u' 'U'] (identifier as id)                         { ScalarValue {identifier=id; value='U'} }
-    | ['b' 'B'] (vector_val+ as b) w+ (identifier as id)   { BinaryVector {identifier=id; value=b} }
-    | ['r' 'R'] (real_number as r) w+ (identifier as id)   { RealVector {identifier=id; value=r} }
+    | "0" (identifier as id)                               { ValueChange (ScalarValue {identifier=id; value='0'}) }
+    | "1" (identifier as id)                               { ValueChange (ScalarValue {identifier=id; value='1'}) }
+    | ['x' 'X'] (identifier as id)                         { ValueChange (ScalarValue {identifier=id; value='X'}) }
+    | ['z' 'Z'] (identifier as id)                         { ValueChange (ScalarValue {identifier=id; value='Z'}) }
+    | ['u' 'U'] (identifier as id)                         { ValueChange (ScalarValue {identifier=id; value='U'}) }
+    | ['b' 'B'] (vector_val+ as b) w+ (identifier as id)   { ValueChange (BinaryVector {identifier=id; value=b}) }
+    | ['r' 'R'] (real_number as r) w+ (identifier as id)   { ValueChange (RealVector {identifier=id; value=r}) }
     | w+                                                   { simulation lexbuf }
     | eof                                                  { EOF }
+and dumpvars =
+    parse
+    | "0" (identifier as id)                               { ScalarValue {identifier=id; value='0'} :: dumpvars lexbuf }
+    | "1" (identifier as id)                               { ScalarValue {identifier=id; value='1'} :: dumpvars lexbuf }
+    | ['x' 'X'] (identifier as id)                         { ScalarValue {identifier=id; value='X'} :: dumpvars lexbuf }
+    | ['z' 'Z'] (identifier as id)                         { ScalarValue {identifier=id; value='Z'} :: dumpvars lexbuf }
+    | ['u' 'U'] (identifier as id)                         { ScalarValue {identifier=id; value='U'} :: dumpvars lexbuf }
+    | ['b' 'B'] (vector_val+ as b) w+ (identifier as id)   { BinaryVector {identifier=id; value=b} :: dumpvars lexbuf }
+    | ['r' 'R'] (real_number as r) w+ (identifier as id)   { RealVector {identifier=id; value=r} :: dumpvars lexbuf }
+    | w+                                                   { dumpvars lexbuf }
+    | "$end"                                               { [] }
 and scope =
     parse 
-    | w* "begin" w* (identifier as id) w* "$end"    { Scope { scope_type=Begin; identifier=id } }
-    | w* "fork" w* (identifier as id) w* "$end"     { Scope { scope_type=Fork; identifier=id } }
-    | w* "function" w* (identifier as id) w* "$end" { Scope { scope_type=Function; identifier=id } } 
-    | w* "module" w* (identifier as id) w* "$end"   { Scope { scope_type=Module; identifier=id } }
-    | w* "task" w* (identifier as id) w* "$end"     { Scope { scope_type=Task; identifier=id } }
+    | w* "begin" w* (identifier as id)? w* "$end"    { Scope { scope_type=Begin; identifier=id } }
+    | w* "fork" w* (identifier as id)? w* "$end"     { Scope { scope_type=Fork; identifier=id } }
+    | w* "function" w* (identifier as id)? w* "$end" { Scope { scope_type=Function; identifier=id } } 
+    | w* "module" w* (identifier as id)? w* "$end"   { Scope { scope_type=Module; identifier=id } }
+    | w* "task" w* (identifier as id)? w* "$end"     { Scope { scope_type=Task; identifier=id } }
 and timescale =
     parse
     | w* (("1" | "10" | "100") as t) w* "s" w* "$end"  { Timescale { value=int_of_string t; unit=Second } }

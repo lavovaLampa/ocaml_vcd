@@ -3,7 +3,9 @@ open Lexer
 exception
   ParseError of { expected : string; got : string; position : Lexing.position }
 
-type scope = { scope_type : Lexer.scope; identifier : string } [@@deriving show]
+type scope = { scope_type : Lexer.scope; identifier : string option }
+[@@deriving show]
+
 type timescale = { value : int; unit : time_unit } [@@deriving show]
 type 'a parse_result = Ok of 'a | EndOfFile | Err of Lexing.position
 
@@ -26,18 +28,6 @@ type declaration_cmd =
   | EndDefinitions
 [@@deriving show]
 
-val pp_array :
-  (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a array -> unit
-
-type 'a value_change_dict = { identifier : string; value : 'a }
-[@@deriving show]
-
-type value_change =
-  | Scalar of char value_change_dict
-  | BinaryVector of string value_change_dict
-  | RealVector of string value_change_dict
-[@@deriving show]
-
 type simulation_cmd =
   | Comment of string
   | DumpAll of value_change list
@@ -54,7 +44,6 @@ type vcd_ast = {
 }
 [@@deriving show]
 
-val identifier_of_value_change : value_change -> string
 val next_declaration_cmd : Lexing.lexbuf -> declaration_cmd parse_result
 val seq_of_declaration : Lexing.lexbuf -> declaration_cmd Seq.t
 val next_simulation_cmd : Lexing.lexbuf -> simulation_cmd parse_result
