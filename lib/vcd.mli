@@ -31,18 +31,23 @@ val comments : t -> string list
 (** [comments vcd] returns list of declaration comments. *)
 
 val string_of_var : ?sep:string -> scoped_var -> string
-(** [string_of_var ?(sep = ".") vcd var] creates a string representation
-  of [var], concatenating parent scopes with separator [sep]. *)
+(** [string_of_var ?(sep = ".") vcd var] creates a string representation of
+    [var], concatenating parent scopes with separator [sep]. *)
 
 val var_of_identifier : t -> string -> scoped_var list
-(** [var_of_identifier vcd identifier] returns all variable bound to [identifier]. *)
+(** [var_of_identifier vcd identifier] returns all variables bound to
+    [identifier]. *)
 
 val seq_of_simulation : t -> Parser.simulation_cmd Seq.t
-(** [seq_of_simulation vcd] returns ephemeral, affine sequence of simulation values 
-    grouped by time *)
+(** [seq_of_simulation vcd] returns ephemeral, affine sequence of simulation
+    values grouped by time *)
 
 val from_file : string -> t
 (** [from_file file] creates a fresh parser from UTF-8 encoded [file] *)
+
+val from_channel : In_channel.t -> t
+(** [from_channel channel] creates a fresh parser from UTF-8 encoded [channel]
+*)
 
 val from_string : string -> t
 (** [from_string string] creates a fresh parser from [string] *)

@@ -1,7 +1,11 @@
 open Internal
 open Util
 
-type src_type = String of string | File of string  (** Input source type *)
+type src_type =
+  | String of string
+  | File of string
+  | Channel of In_channel.t  (** Input source type *)
+
 type scope = { scope : Parser.scope; parent : scope option } [@@deriving show]
 type scoped_var = { var : Parser.var; scope : scope option } [@@deriving show]
 
@@ -58,6 +62,7 @@ let make src =
     | File f ->
         let ch = In_channel.open_bin f in
         (Lexing.from_channel ch, fun () -> In_channel.close ch)
+    | Channel ch -> (Lexing.from_channel ch, fun () -> In_channel.close ch)
   in
   let declarations = lexbuf |> Parser.seq_of_declaration |> List.of_seq in
   let id_to_var = build_var_hashtbl declarations in
@@ -105,4 +110,5 @@ let var_of_identifier { declarations = { id_to_var; _ }; _ } id =
 let seq_of_simulation { lexbuf; _ } = Parser.seq_of_simulation lexbuf
 let from_file file = make (File file)
 let from_string string = make (String string)
+let from_channel ch = make (Channel ch)
 let close { close; _ } = close ()
