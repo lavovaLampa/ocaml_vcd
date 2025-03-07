@@ -1,9 +1,11 @@
-(lang dune 3.12)
+(lang dune 3.17)
 
 (name ocaml_vcd)
+
 (version 0.0.1)
 
 (generate_opam_files true)
+
 (map_workspace_root false)
 
 (source
@@ -21,7 +23,7 @@
  (name ocaml_vcd)
  (synopsis "Value Change Dump parser")
  (description "Pure OCaml VCD file parser (as defined in IEEE 1364-1995)")
- (depends ocaml dune ppx_show)
+ (depends ocaml dune ppx_deriving)
  (tags
   (topics "to describe" your project)))
 

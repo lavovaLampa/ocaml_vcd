@@ -12,8 +12,8 @@ doc: "https://url/to/documentation"
 bug-reports: "https://github.com/lavovaLampa/ocaml_vcd/issues"
 depends: [
   "ocaml"
-  "dune" {>= "3.12"}
-  "ppx_show"
+  "dune" {>= "3.17"}
+  "ppx_deriving"
   "odoc" {with-doc}
 ]
 build: [

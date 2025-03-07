@@ -3,6 +3,9 @@
 (library
  (public_name ocaml_vcd)
  (name ocaml_vcd)
- (libraries ppx_show.runtime)
  (preprocess
-  (pps ppx_show)))
+  (pps
+   ppx_deriving.show
+   ppx_deriving.ord
+   ppx_deriving.enum
+   ppx_deriving.make)))
